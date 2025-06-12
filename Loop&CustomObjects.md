@@ -183,12 +183,6 @@ if ($Circuit.Authorizations) { ... }
 * [ImportExcel GitHub](https://github.com/dfinke/ImportExcel)
 * [Azure ExpressRoute Docs](https://learn.microsoft.com/en-us/azure/expressroute/expressroute-introduction)
 
----
 
-## 🧪 Prompt Behind This Doc
-
-> "Create a comprehensive and stylish markdown reference document in the format of a 'Hit Doc' — like a README, for PowerShell Azure scripting use case. Include sections for objective, modules used, full script, custom object explanation, deep dive into filtering and looping through nested properties, cheatsheet table, best practices, and a prompt at the end for replication. Use markdown syntax like a well-organized GitHub project."
-
----
 
 **Happy Scripting! 💻⚙️**
