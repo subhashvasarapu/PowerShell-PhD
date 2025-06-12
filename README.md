@@ -46,7 +46,7 @@
   * [Switch Statement](docs/control-flow/switch.md)
   * [Ternary Logic Simulation](docs/control-flow/ternary.md)
 
-* [Loops Overview](docs/control-flow/loops.md)
+* [Loops Overview](https://github.com/subhashvasarapu/PowerShell-PhD/tree/main/Loops%20Overview)
 
   * [For Loop](docs/control-flow/loops-for.md)
   * [ForEach Loop](docs/control-flow/loops-foreach.md)
