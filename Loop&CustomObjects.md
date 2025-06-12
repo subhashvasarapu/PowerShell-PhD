@@ -1,130 +1,194 @@
+# ⚡ PowerShell Hit Doc – The Ultimate Azure Automation Reference
 
-KQL Hit Doc - The Complete Kusto Query Language (KQL) Reference
-Welcome to the KQL Hit Doc – your all-in-one, charming, exhaustive, and battle-ready knowledge base on Kusto Query Language (KQL). This document is crafted as both a learning journal and an advanced cheat sheet to empower you with everything from beginner syntax to advanced analytics. Ideal for Azure Monitor, Application Insights, Log Analytics, and more.
+*A Battle-Tested, Elegant Guide to Mastering PowerShell in Azure Environments*
 
-📚 Table of Contents
-Introduction to KQL
-Core Concepts
-Basic Syntax
-Query Operators
-Data Types
-Data Ingestion and Schema
-Commonly Used Tables (Azure)
-Filtering, Sorting, Projection
-Aggregation & Summarization
-Joins and Lookups
-Subqueries and Let Statements
-Time Series Analysis
-Rendering & Visualization
-Advanced Functions & Plugins
-Security and Access Control
-Performance Tuning
-Tips, Tricks, and Patterns
-Real-life Scenarios and Examples
-Further Reading & References
-📖 Introduction to KQL
-Kusto Query Language (KQL) is a read-only query language designed for big data analytics. Used primarily in Azure Monitor, Log Analytics, and Application Insights, it is optimized for interactive ad hoc queries.
+Welcome to the **PowerShell Hit Doc** – your charming, exhaustive, and battle-tested reference guide for **Azure PowerShell automation**. This markdown handbook combines **practical scripting**, **custom object creation**, **data filtering**, **Excel exporting**, and deep PowerShell fluency into one focused and reusable source.
 
-Developed by Microsoft for Azure Data Explorer.
-Declarative and SQL-like but tailored for telemetry data.
-Use-cases: performance monitoring, diagnostics, security analysis.
-🧠 Core Concepts
-Everything is table-based.
-Queries are pipeline-based, flowing through | operators.
-Supports structured, semi-structured, and time-series data.
-Read-only: No data updates via KQL.
-🧾 Basic Syntax
-TableName
-| where Condition
-| summarize Count = count() by Column
-| order by Count desc
-Case-sensitive.
-Whitespace and indentation improve readability but are not required.
-⚙️ Query Operators
-project, extend, summarize, where, order by, take, join
-Control flow: if, case
-Type casting: tostring(), toint(), etc.
-🔠 Data Types
-Primitive: string, int, long, datetime, bool, real, guid
-Complex: dynamic (JSON-like), timespan
-📥 Data Ingestion and Schema
-In Azure, data is pushed into tables like Perf, Heartbeat, SecurityEvent, etc.
-Schema = columns + data types + metadata
-Use .show and .ingest commands (in ADX context).
+---
 
-📊 Commonly Used Tables (Azure)
-AzureActivity, SigninLogs, SecurityEvent
-Perf, Syslog, Heartbeat, AppRequests
-Usage, InsightsMetrics
-🔍 Filtering, Sorting, Projection
-SecurityEvent
-| where EventID == 4625
-| project TimeGenerated, Computer, Account
-| order by TimeGenerated desc
-📈 Aggregation & Summarization
-SigninLogs
-| summarize Failures = count() by bin(TimeGenerated, 1h), ResultType
-count(), avg(), max(), sum(), percentiles(), make_list()
-🔗 Joins and Lookups
-Table1
-| join kind=inner (Table2) on CommonColumn
-inner, leftouter, rightouter, fullouter, anti, semi
-🔄 Subqueries and Let Statements
-let FailedLogins = SigninLogs | where ResultType != 0;
-FailedLogins | summarize count() by UserPrincipalName
-Use let for modular, reusable logic.
-⏱️ Time Series Analysis
-Perf
-| where ObjectName == "Processor" and CounterName == "% Processor Time"
-| summarize avg(CounterValue) by bin(TimeGenerated, 5m)
-Use make-series, range, bin(), and serialize
-📊 Rendering & Visualization
-Perf
-| summarize avg(CounterValue) by bin(TimeGenerated, 5m)
-| render timechart
-Types: timechart, barchart, piechart, table
-🧮 Advanced Functions & Plugins
-Math/Stats: percentile(), variance(), stdev()
-String: split(), substring(), replace_string()
-Datetime: ago(), now(), startofhour()
-Dynamic: parse_json(), extractjson()
-Plugins: predict, anomaly_detection, cluster()
-🔐 Security and Access Control
-RBAC at Azure Resource and Log Analytics Workspace level.
-Table-level permissions.
-KQL itself doesn’t write data, ensuring read-only integrity.
-🚀 Performance Tuning
-Use project early to limit columns.
-Filter early (where) to reduce row count.
-Avoid wildcard searches (contains → has / startswith)
-Index-aware queries improve performance.
-🧩 Tips, Tricks, and Patterns
-Prefer has over contains for word-matching.
-Use toscalar() to assign values from a query.
-Use distinct for unique rows.
-Combine logs with union.
-Debug using print.
-🎯 Real-life Scenarios and Examples
-Find top 5 IPs with failed login attempts:
-SigninLogs
-| where ResultType != 0
-| summarize Count = count() by IPAddress
-| top 5 by Count desc
-Analyze CPU over time:
-Perf
-| where CounterName == "% Processor Time"
-| summarize avg(CounterValue) by bin(TimeGenerated, 10m), Computer
-| render timechart
-🔗 Further Reading & References
-KQL Official Docs
-Azure Monitor
-KQL Tutorials
-KQL Quick Reference
-✨ Charm Glimpse of KQL
-"Querying logs should be poetic."
+## 📚 Table of Contents
 
-KQL is not just a query language; it's an analyst's wand, a developer's magnifier, and a security guardian's shield. Use it to slice time, stitch patterns, sniff anomalies, and trace problems — all with readable, powerful syntax.
+1. [🎯 Introduction & Objective](#-introduction--objective)
+2. [📦 Required Modules](#-required-modules)
+3. [🔁 Execution Flow Breakdown](#-execution-flow-breakdown)
+4. [📜 Script Walkthrough](#-script-walkthrough)
+5. [🧱 Custom Objects Explained](#-custom-objects-explained)
+6. [🔍 Accessing and Filtering Nested Data](#-accessing-and-filtering-nested-data)
+7. [🔄 Practical Deep Dive: Looping and Filtering](#-practical-deep-dive-looping-and-filtering)
+8. [🧾 PowerShell Cheatsheet](#-powershell-cheatsheet)
+9. [⚠️ Best Practices & Gotchas](#-best-practices--gotchas)
+10. [📚 References & Resources](#-references--resources)
+11. [🧪 Prompt Behind This Doc](#-prompt-behind-this-doc)
 
-Play Ground For Challenges
+---
 
-My Achievements:
+## 🎯 Introduction & Objective
+
+**Objective**: Automate the export of Azure ExpressRoute Circuit Authorization data into Excel format, specifically circuits containing `EML` in their names. This demonstrates:
+
+* Resource filtering
+* Looping nested properties
+* Building clean export structures with `[PSCustomObject]`
+* Exporting to Excel using `Export-Excel`
+
+---
+
+## 📦 Required Modules
+
+```powershell
+Install-Module -Name Az -Force
+Install-Module -Name ImportExcel -Scope CurrentUser
+```
+
+* `Az`: Azure PowerShell module.
+* `ImportExcel`: Export data to `.xlsx` without needing Excel installed.
+
+---
+
+## 🔁 Execution Flow Breakdown
+
+1. Fetch all ExpressRoute Circuits.
+2. Filter only those with `EML` in their names.
+3. Loop through each filtered circuit.
+4. Access nested `.Authorizations` property.
+5. Loop through each authorization and extract data.
+6. Create structured PowerShell objects.
+7. Export to Excel.
+
+---
+
+## 📜 Script Walkthrough
+
+```powershell
+$EMLCircuitList = Get-AzExpressRouteCircuit | Where-Object { $_.Name -like '*EML*' }
+$exportList = @()
+
+foreach ($Circuit in $EMLCircuitList) {
+    $circuitName = $Circuit.Name
+    if ($Circuit.Authorizations) {
+        foreach ($auth in $Circuit.Authorizations) {
+            $exportList += [PSCustomObject]@{
+                CircuitName       = $circuitName
+                AuthName          = $auth.Name
+                AuthState         = $auth.AuthorizationUseStatus
+                ProvisioningState = $auth.ProvisioningState
+            }
+        }
+    }
+}
+
+$exportList | Export-Excel -Path 'C:\Temp\EMLExpressRouteCircuitAuthList.xlsx' -WorksheetName 'AuthList' -AutoSize -TableName 'AuthList'
+```
+
+---
+
+## 🧱 Custom Objects Explained
+
+Custom objects created using `[PSCustomObject]` are structured containers that allow you to output readable, exportable, and reusable tabular data.
+
+### ✅ Why Use Them?
+
+* Exporting to Excel/CSV/JSON becomes easy.
+* Makes tabular output human-readable.
+* Ensures consistent fields for automation pipelines.
+
+### 💡 Syntax
+
+```powershell
+[PSCustomObject]@{
+    Name  = 'Sample'
+    Type  = 'Demo'
+    Value = 123
+}
+```
+
+---
+
+## 🔍 Accessing and Filtering Nested Data
+
+### Accessing First Circuit's Authorization:
+
+```powershell
+$emlCircuitList[0].Authorizations
+```
+
+### Get First Authorization Name:
+
+```powershell
+$emlCircuitList[0].Authorizations[0].Name
+```
+
+### Expand All Authorization Names:
+
+```powershell
+$emlCircuitList[0].Authorizations | Select-Object -ExpandProperty Name
+```
+
+---
+
+## 🔄 Practical Deep Dive: Looping and Filtering
+
+### Looping Circuits:
+
+```powershell
+foreach ($Circuit in $EMLCircuitList) {
+    Write-Output $Circuit.Name
+}
+```
+
+### Nested Loop on Authorizations:
+
+```powershell
+foreach ($Circuit in $EMLCircuitList) {
+    foreach ($auth in $Circuit.Authorizations) {
+        Write-Output $auth.Name
+    }
+}
+```
+
+### Null Checking:
+
+```powershell
+if ($Circuit.Authorizations) { ... }
+```
+
+---
+
+## 🧾 PowerShell Cheatsheet
+
+| Feature                | Example                               |
+| ---------------------- | ------------------------------------- |
+| Array Indexing         | `$arr[0]`                             |
+| Dot Notation           | `$obj.Property`                       |
+| Filter Items           | `Where-Object { $_.Name -eq 'Test' }` |
+| Create Object          | `[PSCustomObject]@{ Name = 'Test' }`  |
+| Nested Property Access | `$obj.Prop[0].SubProp`                |
+| Excel Export           | `Export-Excel -Path 'file.xlsx'`      |
+
+---
+
+## ⚠️ Best Practices & Gotchas
+
+* Always check for null before looping nested arrays.
+* Use `[PSCustomObject]` instead of `New-Object` for better performance.
+* Prefer `-ExpandProperty` to get clean values.
+* Avoid `.Add()` on arrays — use `+=` or `[List[object]]` for big loops.
+
+---
+
+## 📚 References & Resources
+
+* [PowerShell Docs](https://learn.microsoft.com/en-us/powershell/)
+* [Az PowerShell Module](https://learn.microsoft.com/en-us/powershell/azure/overview)
+* [ImportExcel GitHub](https://github.com/dfinke/ImportExcel)
+* [Azure ExpressRoute Docs](https://learn.microsoft.com/en-us/azure/expressroute/expressroute-introduction)
+
+---
+
+## 🧪 Prompt Behind This Doc
+
+> "Create a comprehensive and stylish markdown reference document in the format of a 'Hit Doc' — like a README, for PowerShell Azure scripting use case. Include sections for objective, modules used, full script, custom object explanation, deep dive into filtering and looping through nested properties, cheatsheet table, best practices, and a prompt at the end for replication. Use markdown syntax like a well-organized GitHub project."
+
+---
+
+**Happy Scripting! 💻⚙️**
